@@ -29,3 +29,6 @@ dist-ssr
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+z_anotacoes.txt
+z_localizadores.txt
