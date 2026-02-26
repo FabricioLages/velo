@@ -3,8 +3,8 @@ import { generateOrderCode } from '../support/helpers'
 
 test.describe('Consulta de Pedido', () => {
   test.beforeEach(async ({ app }) => {
-    await app.orderLockup.open()   
-   
+    await app.orderLoockup.open()
+
   })
 
   test('deve consultar um pedido aprovado', async ({ app, page }) => {
@@ -21,7 +21,7 @@ test.describe('Consulta de Pedido', () => {
       payment: 'À Vista'
     }
 
-    await app.orderLockup.searchOrder(order.number)
+    await app.orderLoockup.searchOrder(order.number)
 
     await expect(page.getByTestId(`order-result-${order.number}`)).toMatchAriaSnapshot(`
       - img
@@ -53,7 +53,7 @@ test.describe('Consulta de Pedido', () => {
       - paragraph: /R\\$ \\d+\\.\\d+,\\d+/
       `)
 
-    await app.orderLockup.validateStatusBadge(order.status)
+    await app.orderLoockup.validateStatusBadge(order.status)
   })
 
   test('deve consultar um pedido reprovado', async ({ app, page }) => {
@@ -69,8 +69,8 @@ test.describe('Consulta de Pedido', () => {
       },
       payment: 'À Vista'
     }
-   
-    await app.orderLockup.searchOrder(order.number)
+
+    await app.orderLoockup.searchOrder(order.number)
 
     await expect(page.getByTestId(`order-result-${order.number}`)).toMatchAriaSnapshot(`
       - img
@@ -101,8 +101,8 @@ test.describe('Consulta de Pedido', () => {
       - paragraph: ${order.payment}
       - paragraph: /R\\$ \\d+\\.\\d+,\\d+/
       `)
-  
-    await app.orderLockup.validateStatusBadge(order.status)
+
+    await app.orderLoockup.validateStatusBadge(order.status)
   })
 
   test('deve consultar um pedido em analise', async ({ app, page }) => {
@@ -116,10 +116,11 @@ test.describe('Consulta de Pedido', () => {
         name: 'João da Silva',
         email: 'joao@velo.dev'
       },
-      payment: 'À Vista'    }
+      payment: 'À Vista'
+    }
 
 
-    await app.orderLockup.searchOrder(order.number)
+    await app.orderLoockup.searchOrder(order.number)
 
     await expect(page.getByTestId(`order-result-${order.number}`)).toMatchAriaSnapshot(`
       - img
@@ -151,22 +152,32 @@ test.describe('Consulta de Pedido', () => {
       - paragraph: /R\\$ \\d+\\.\\d+,\\d+/
       `)
 
-    await app.orderLockup.validateStatusBadge(order.status)
+    await app.orderLoockup.validateStatusBadge(order.status)
   })
 
   test('deve exibir mensagem quando o pedido não é encontrado', async ({ app }) => {
 
     const order = generateOrderCode()
 
-    await app.orderLockup.searchOrder(order)
-    await app.orderLockup.validateOrderNotFound()
+    await app.orderLoockup.searchOrder(order)
+    await app.orderLoockup.validateOrderNotFound()
   })
 
   test('deve exibir mensagem quando o pedido tem código fora do padrão', async ({ app }) => {
 
     const orderCode = 'CODIGO-INVALIDO-999'
 
-    await app.orderLockup.searchOrder(orderCode)
-    await app.orderLockup.validateOrderNotFound()
+    await app.orderLoockup.searchOrder(orderCode)
+    await app.orderLoockup.validateOrderNotFound()
+  })
+
+  test('deve manter o botão de busca desabilitado com campo vazio ou apenas espaços', async ({ app, page }) => {
+  
+    const button =  app.orderLoockup.element.searchButton
+    
+    await expect(button).toBeDisabled()
+    await app.orderLoockup.element.orderInput.fill('    ')
+    await expect(button).toBeDisabled()
+
   })
 })

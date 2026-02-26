@@ -30,19 +30,28 @@ export function createOrderLockupActions(page: Page) {
     }
   } as const
 
+  const orderInput = page.getByRole('textbox', { name: 'Número do Pedido' })
+  const searchButton = page.getByRole('button', { name: 'Buscar Pedido' })
+
   return {
+
+    element: {
+      orderInput,
+      searchButton
+    },
+
     async open() {
       await page.goto('/')
       const title = page.getByTestId('hero-section').getByRole('heading')
       await expect(title).toContainText('Velô Sprint')
-      
+
       await page.getByRole('link', { name: 'Consultar Pedido' }).click()
       await expect(page.getByRole('heading')).toContainText('Consultar Pedido')
     },
 
     async searchOrder(code: string) {
-      await page.getByRole('textbox', { name: 'Número do Pedido' }).fill(code)
-      await page.getByRole('button', { name: 'Buscar Pedido' }).click()
+      await orderInput.fill(code)
+      await searchButton.click()
     },
 
     async validateStatusBadge(status: OrderStatus) {
@@ -60,7 +69,7 @@ export function createOrderLockupActions(page: Page) {
       - heading "Pedido não encontrado" [level=3]
       - paragraph: Verifique o número do pedido e tente novamente
       `)
-    }, 
+    },
   }
 }
 
