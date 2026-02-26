@@ -1,25 +1,23 @@
 import { test, expect } from '@playwright/test'
 
 import { generateOrderCode } from '../support/helpers'
+import { Navbar } from '../support/components/Navbar'
 
 import { OrderLockupPage } from '../support/pages/OrderLockupPage'
-
-/// AAA - Arrange, Act, Assert
+import { LandingPage } from '../support/pages/LandingPage'
 
 test.describe('Consulta de Pedido', () => {
+  let orderLockupPage: OrderLockupPage
 
-  test.beforeEach(async ({ page }) => {
-    // Arrange
-    await page.goto('http://localhost:5173/')
-    await expect(page.getByTestId('hero-section').getByRole('heading')).toContainText('Velô Sprint')
-
-    await page.getByRole('link', { name: 'Consultar Pedido' }).click()
-    await expect(page.getByRole('heading')).toContainText('Consultar Pedido')
+  test.beforeEach(async ({ page }) => {    
+    await new LandingPage(page).goto()
+    await new Navbar(page).orderLockupLink()
+    orderLockupPage = new OrderLockupPage(page)
+    await new OrderLockupPage(page).validatePageLoaded()    
   })
 
   test('deve consultar um pedido aprovado', async ({ page }) => {
 
-    // Test Data
     const order = {
       number: 'VLO-0BWEV0',
       status: 'APROVADO' as const,
@@ -32,11 +30,8 @@ test.describe('Consulta de Pedido', () => {
       payment: 'À Vista'
     }
 
-    // Act  
-    const orderLockupPage = new OrderLockupPage(page)
     await orderLockupPage.searchOrder(order.number)
 
-    // Assert
     await expect(page.getByTestId(`order-result-${order.number}`)).toMatchAriaSnapshot(`
       - img
       - paragraph: Pedido
@@ -67,14 +62,11 @@ test.describe('Consulta de Pedido', () => {
       - paragraph: /R\\$ \\d+\\.\\d+,\\d+/
       `)
 
-    // Validação do badge de status encapsulada no Page Object
     await orderLockupPage.validateStatusBadge(order.status)
-
   })
 
   test('deve consultar um pedido reprovado', async ({ page }) => {
 
-    // Test Data
     const order = {
       number: 'VLO-BYA1N6',
       status: 'REPROVADO' as const,
@@ -86,12 +78,9 @@ test.describe('Consulta de Pedido', () => {
       },
       payment: 'À Vista'
     }
-
-    // Act  
-    const orderLockupPage = new OrderLockupPage(page)
+   
     await orderLockupPage.searchOrder(order.number)
 
-    // Assert
     await expect(page.getByTestId(`order-result-${order.number}`)).toMatchAriaSnapshot(`
       - img
       - paragraph: Pedido
@@ -121,14 +110,12 @@ test.describe('Consulta de Pedido', () => {
       - paragraph: ${order.payment}
       - paragraph: /R\\$ \\d+\\.\\d+,\\d+/
       `)
-
-    // Validação do badge de status encapsulada no Page Object
+  
     await orderLockupPage.validateStatusBadge(order.status)
   })
 
   test('deve consultar um pedido em analise', async ({ page }) => {
 
-    // Test Data
     const order = {
       number: 'VLO-ZUB7MG',
       status: 'EM_ANALISE' as const,
@@ -138,14 +125,11 @@ test.describe('Consulta de Pedido', () => {
         name: 'João da Silva',
         email: 'joao@velo.dev'
       },
-      payment: 'À Vista'
-    }
+      payment: 'À Vista'    }
 
-    // Act  
-    const orderLockupPage = new OrderLockupPage(page)
+
     await orderLockupPage.searchOrder(order.number)
 
-    // Assert
     await expect(page.getByTestId(`order-result-${order.number}`)).toMatchAriaSnapshot(`
       - img
       - paragraph: Pedido
@@ -176,22 +160,22 @@ test.describe('Consulta de Pedido', () => {
       - paragraph: /R\\$ \\d+\\.\\d+,\\d+/
       `)
 
-    // Validação do badge de status encapsulada no Page Object
     await orderLockupPage.validateStatusBadge(order.status)
   })
 
   test('deve exibir mensagem quando o pedido não é encontrado', async ({ page }) => {
 
     const order = generateOrderCode()
-
-    const orderLockupPage = new OrderLockupPage(page)
+    
     await orderLockupPage.searchOrder(order)
+    await orderLockupPage.validateOrderNotFound()
+  })
 
+  test('deve exibir mensagem quando o pedido tem código fora do padrão', async ({ page }) => {
 
-    await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - img
-      - heading "Pedido não encontrado" [level=3]
-      - paragraph: Verifique o número do pedido e tente novamente
-      `)
+    const orderCode = 'CODIGO-INVALIDO-999'
+ 
+    await orderLockupPage.searchOrder(orderCode)
+    await orderLockupPage.validateOrderNotFound()
   })
 })

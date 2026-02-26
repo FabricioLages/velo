@@ -2,6 +2,15 @@ import { Page, expect } from '@playwright/test'
 
 type OrderStatus = 'APROVADO' | 'REPROVADO' | 'EM_ANALISE'
 
+export type OrderDetails = {
+  number: string
+  status: OrderStatus
+  color: string
+  wheels: string
+  customer: { name: string; email: string }
+  payment: string
+}
+
 export class OrderLockupPage {
 
     constructor(private page: Page) { }
@@ -36,5 +45,17 @@ export class OrderLockupPage {
         await expect(statusBadge).toHaveClass(new RegExp(classes.background))
         await expect(statusBadge).toHaveClass(new RegExp(classes.text))
         await expect(statusBadge.locator('svg')).toHaveClass(new RegExp(classes.icon))
+    }
+
+    async validateOrderNotFound() {
+        await expect(this.page.locator('#root')).toMatchAriaSnapshot(`
+      - img
+      - heading "Pedido não encontrado" [level=3]
+      - paragraph: Verifique o número do pedido e tente novamente
+      `)
+    }
+
+    async validatePageLoaded(){
+        await expect(this.page.getByRole('heading')).toContainText('Consultar Pedido')
     }
 }
