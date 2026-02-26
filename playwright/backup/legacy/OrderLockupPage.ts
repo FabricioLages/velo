@@ -59,3 +59,4 @@ export class OrderLockupPage {
         await expect(this.page.getByRole('heading')).toContainText('Consultar Pedido')
     }
 }
+
