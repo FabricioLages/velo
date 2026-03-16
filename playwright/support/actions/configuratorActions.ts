@@ -34,9 +34,5 @@ export function createConfiguratorActions(page: Page) {
     async toggleOption(optionName: string) {
       await page.getByRole('checkbox', { name: optionName }).click()
     },
-
-    async checkout() {
-      await page.getByRole('button', { name: 'Monte o Seu' }).click()
-    },
   }
 }

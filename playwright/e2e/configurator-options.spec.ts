@@ -21,7 +21,7 @@ test.describe('Configuração de adicionais do Veículo', () => {
     await app.configurator.expectPrice('R$ 40.000,00')
 
     await expect(page.getByRole('button', { name: 'Monte o Seu' })).toBeVisible()
-    await app.configurator.checkout()
+    await page.getByRole('button', { name: 'Monte o Seu' }).click()
 
     await expect(page).toHaveURL(/.*\/order/)
   })
