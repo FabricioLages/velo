@@ -24,11 +24,13 @@ dist-ssr
 *.sw?
 
 # Playwright
+/documents/
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+/.playwright-mcp/
 
 z_anotacoes.txt
 z_localizadores.txt
@@ -36,4 +38,6 @@ z_aprovado.txt
 z_emAnalise.txt
 z_reprovado.txt
 db-password.txt
-proposta1.md
+z_proposta1.md
+z_testCase2.md
+
