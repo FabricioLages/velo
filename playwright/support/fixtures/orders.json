@@ -1,0 +1,44 @@
+{
+  "aprovado": {
+    "number": "VLO-SE4R01",
+    "status": "APROVADO",
+    "color": "Glacier Blue",
+    "wheels": "aero Wheels",
+    "customer": {
+      "name": "FABRICIO LAGES",
+      "email": "fabriciolagess@gmail.com",
+      "document": "751.945.410-07",
+      "phone": "(31) 99999-9999"
+    },
+    "payment": "À Vista",
+    "total_price": "40000"
+  },
+  "reprovado": {
+    "number": "VLO-SE4R02",
+    "status": "REPROVADO",
+    "color": "Midnight Black",
+    "wheels": "sport Wheels",
+    "customer": {
+      "name": "Carolina Neves",
+      "email": "cnoliveira84@gmail.com",
+      "document": "530.825.870-89",
+      "phone": "(31) 99999-9999"
+    },
+    "payment": "À Vista",
+    "total_price": "40000"
+  },
+  "em_analise": {
+    "number": "VLO-SE4R03",
+    "status": "EM_ANALISE",
+    "color": "Lunar White",
+    "wheels": "aero Wheels",
+    "customer": {
+      "name": "João da Silva",
+      "email": "joao@velo.dev",
+      "document": "435.456.460-25",
+      "phone": "(31) 99999-9999"
+    },
+    "payment": "À Vista",
+    "total_price": "40000"
+  }
+}

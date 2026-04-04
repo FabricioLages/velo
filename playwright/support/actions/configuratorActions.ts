@@ -1,6 +1,7 @@
 import { Page, expect } from '@playwright/test'
 
 export function createConfiguratorActions(page: Page) {
+  const optionalCheckbox = (name: string | RegExp) => page.getByRole('checkbox', { name })
   const priceElement = page.getByTestId('total-price')
 
   return {
@@ -31,8 +32,18 @@ export function createConfiguratorActions(page: Page) {
       await expect(page.locator('img[alt^="Velô Sprint"]')).toHaveAttribute('src', scr)
     },
 
-    async toggleOption(optionName: string) {
-      await page.getByRole('checkbox', { name: optionName }).click()
+    async checkOptional(name: string | RegExp) {
+      await expect(optionalCheckbox(name)).toBeVisible()
+      await optionalCheckbox(name).check()
+    },
+
+    async uncheckOptional(name: string | RegExp) {
+      await expect(optionalCheckbox(name)).toBeVisible()
+      await optionalCheckbox(name).uncheck()
+    },
+
+    async finishConfigurator() {
+      await page.getByRole('button', { name: 'Monte o Seu' }).click()
     },
   }
 }
