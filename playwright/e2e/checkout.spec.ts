@@ -1,17 +1,54 @@
 
 import { test, expect } from '../support/fixtures'
+import { deleteSpecificOrder } from '../support/database/orderRepository'
 
 test.describe('Checkout', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/order')
-    await expect(page.getByRole('heading', { name: 'Finalizar Pedido' })).toBeVisible()
+
+
+  test.describe('Fluxo Feliz', () => {
+
+    test('deve criar um pedido com pagamento à vista com sucesso', async ({ app, page }) => {
+      const customer = {
+        name: 'Fabricio',
+        lastname: 'Silva',
+        email: 'fabricio.silva@example.com',
+        document: '09968863033',
+        phone: '(11) 99999-9999',
+        store: 'Velô Paulista',
+        paymentMethod: 'À Vista',
+        totalPrice: 'R$ 40.000,00'
+      }
+
+      await deleteSpecificOrder(customer)
+
+      // Arrange
+      await page.goto('/')
+      await page.getByRole('link', { name: /Configure Agora/i }).click()
+      await app.configurator.expectPrice(customer.totalPrice)
+      await app.configurator.finishConfigurator()
+      await app.checkout.expectLoaded()
+
+
+      await app.checkout.fillCustomerData(customer)
+      await app.checkout.selectStore(customer.store)
+
+      // Act
+      await app.checkout.expectPaymentMethodValue(customer.paymentMethod, customer.totalPrice)
+      await app.checkout.expectSummaryTotal(customer.totalPrice)
+      await app.checkout.acceptTerms()
+      await app.checkout.submit()
+
+      // Assert
+      await app.checkout.expectSuccessRoute()
+      await app.checkout.expectOrderApprovedMessage()
+    })
   })
 
   test.describe('Validações de campos obrigatórios', () => {
-
     let alerts: any
-
-    test.beforeEach(async ({ app }) => {
+    test.beforeEach(async ({ page, app }) => {
+      await page.goto('/order')
+      await expect(page.getByRole('heading', { name: 'Finalizar Pedido' })).toBeVisible()
       alerts = app.checkout.elements.alerts
     })
 

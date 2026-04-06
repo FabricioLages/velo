@@ -47,6 +47,15 @@ export function createCheckoutActions(page: Page) {
       await page.getByRole('option', { name: store }).click()
     },
 
+    async selectPaymentMethod(method: string) {
+      await page.getByRole('button', { name: new RegExp(method, 'i') }).click()
+    },
+
+    async expectPaymentMethodValue(method: string, value: string) {
+      const tab = page.getByRole('button', { name: new RegExp(method, 'i') })
+      await expect(tab).toContainText(value)
+    },
+
     async acceptTerms() {
       await terms.check()
     },
@@ -54,5 +63,13 @@ export function createCheckoutActions(page: Page) {
     async submit() {
       await page.getByRole('button', { name: 'Confirmar Pedido' }).click()
     },
+
+    async expectSuccessRoute() {
+      await expect(page).toHaveURL(/.*\/success/)
+    },
+
+    async expectOrderApprovedMessage() {
+      await expect(page.getByRole('heading', { name: 'Pedido Aprovado!' })).toBeVisible()
+    }
   }
 }
