@@ -1,11 +1,10 @@
 
 import { test, expect } from '../support/fixtures'
-import { deleteSpecificOrder } from '../support/database/orderRepository'
+import { deleteSpecificOrder, deleteOrderByEmail } from '../support/database/orderRepository'
 
 test.describe('Checkout', () => {
+  test.describe('Pagamento e Confirmação', () => {
 
-
-  test.describe('Fluxo Feliz', () => {
 
     test('deve criar um pedido com pagamento à vista com sucesso', async ({ app, page }) => {
       const customer = {
@@ -19,7 +18,8 @@ test.describe('Checkout', () => {
         totalPrice: 'R$ 40.000,00'
       }
 
-      await deleteSpecificOrder(customer)
+      //await deleteSpecificOrder(customer)
+      await deleteOrderByEmail(customer.email)
 
       // Arrange
       await page.goto('/')
@@ -42,7 +42,57 @@ test.describe('Checkout', () => {
       await app.checkout.expectSuccessRoute()
       await app.checkout.expectOrderApprovedMessage()
     })
+
+    test('deve aprovar automaticamente o crédito quando o score do CPF for maior que 700 no financiamento.', async ({ app, page }) => {
+      const customer = {
+        name: 'Steve',
+        lastname: 'Woz',
+        email: 'woz@velo.com',
+        document: '75784457071',
+        phone: '(11) 99999-9999',
+        store: 'Velô Paulista',
+        paymentMethod: 'Financiamento',
+        totalPrice: 'R$ 40.000,00'
+      }
+
+      //await deleteSpecificOrder(customer)
+      await deleteOrderByEmail(customer.email)
+
+      await page.route('**/functions/v1/credit-analysis', async route => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            status: 'Done',
+            score: 701,
+          }),
+        })
+      })
+
+      // Arrange
+      await page.goto('/')
+      await page.getByRole('link', { name: /Configure Agora/i }).click()
+      await app.configurator.expectPrice(customer.totalPrice)
+      await app.configurator.finishConfigurator()
+      await app.checkout.expectLoaded()
+
+
+      await app.checkout.fillCustomerData(customer)
+      await app.checkout.selectStore(customer.store)
+
+      // Act     
+      await app.checkout.selectPaymentMethod(customer.paymentMethod)
+      // await app.checkout.expectSummaryTotal(customer.totalPrice)
+      await app.checkout.acceptTerms()
+      await app.checkout.submit()
+
+      // Assert
+      await app.checkout.expectSuccessRoute()
+      await app.checkout.expectOrderApprovedMessage()
+    })
+
   })
+
 
   test.describe('Validações de campos obrigatórios', () => {
     let alerts: any

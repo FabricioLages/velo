@@ -39,6 +39,10 @@ export async function deleteOrderByNumber(orderNumber: string) {
     await db.deleteFrom('orders').where('order_number', '=', orderNumber).execute()
 }
 
+export async function deleteOrderByEmail(email: string) {
+    await db.deleteFrom('orders').where('customer_email', '=', email).execute()
+}
+
 export async function deleteSpecificOrder(customer: any) {
     const formattedCpf = customer.document.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
     const fullName = `${customer.name} ${customer.lastname}`
@@ -49,6 +53,3 @@ export async function deleteSpecificOrder(customer: any) {
         .execute()
 }
 
-export async function getOrderByNumber(orderNumber: string) {
-    return await db.selectFrom('orders').selectAll().where('order_number', '=', orderNumber).executeTakeFirst()
-}
