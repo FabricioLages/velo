@@ -143,7 +143,6 @@ test.describe('Checkout', () => {
       await app.configurator.finishConfigurator()
       await app.checkout.expectLoaded()
 
-
       await app.checkout.fillCustomerData(customer)
       await app.checkout.selectStore(customer.store)
 
@@ -180,7 +179,6 @@ test.describe('Checkout', () => {
       await app.configurator.expectPrice(customer.totalPrice)
       await app.configurator.finishConfigurator()
       await app.checkout.expectLoaded()
-
 
       await app.checkout.fillCustomerData(customer)
       await app.checkout.selectStore(customer.store)
