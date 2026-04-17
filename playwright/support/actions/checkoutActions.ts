@@ -70,6 +70,10 @@ export function createCheckoutActions(page: Page) {
 
     async expectOrderApprovedMessage() {
       await expect(page.getByRole('heading', { name: 'Pedido Aprovado!' })).toBeVisible()
+    },
+
+    async expectOrderInAnalysisMessage() {
+      await expect(page.getByRole('heading', { name: 'Pedido em Análise' })).toBeVisible()
     }
   }
 }
