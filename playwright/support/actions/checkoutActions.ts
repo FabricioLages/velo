@@ -51,9 +51,26 @@ export function createCheckoutActions(page: Page) {
       await page.getByRole('button', { name: new RegExp(method, 'i') }).click()
     },
 
+    async fillDownPayment(value: string) {
+      await page.getByTestId('input-entry-value').fill(value)
+    },
+
     async expectPaymentMethodValue(method: string, value: string) {
       const tab = page.getByRole('button', { name: new RegExp(method, 'i') })
       await expect(tab).toContainText(value)
+    },
+
+    async mockCreditAnalysis(score: number) {
+      await page.route('**/functions/v1/credit-analysis', async route => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            status: 'Done',
+            score: score,
+          }),
+        })
+      })
     },
 
     async acceptTerms() {
@@ -68,12 +85,8 @@ export function createCheckoutActions(page: Page) {
       await expect(page).toHaveURL(/.*\/success/)
     },
 
-    async expectOrderApprovedMessage() {
-      await expect(page.getByRole('heading', { name: 'Pedido Aprovado!' })).toBeVisible()
-    },
-
-    async expectOrderInAnalysisMessage() {
-      await expect(page.getByRole('heading', { name: 'Pedido em Análise' })).toBeVisible()
+    async expectOrderMessage(message: string) {
+      await expect(page.getByRole('heading', { name: new RegExp(message, 'i') })).toBeVisible()
     }
   }
 }
