@@ -28,8 +28,8 @@ export function createConfiguratorActions(page: Page) {
 
     },
 
-    async expectCarImageSrc(scr: string) {
-      await expect(page.locator('img[alt^="Velô Sprint"]')).toHaveAttribute('src', scr)
+    async expectCarImageSrc(src: string | RegExp) {
+      await expect(page.locator('img[alt^="Velô Sprint"]')).toHaveAttribute('src', src)
     },
 
     async checkOptional(name: string | RegExp) {
