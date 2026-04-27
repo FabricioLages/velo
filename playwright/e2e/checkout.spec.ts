@@ -6,7 +6,7 @@ test.describe('Checkout', () => {
   test.describe('Validações de campos obrigatórios', () => {
     let alerts: any
     test.beforeEach(async ({ page, app }) => {
-      await page.goto('/lookup')
+      await page.goto('/order')
       await expect(page.getByRole('heading', { name: 'Finalizar Pedido' })).toBeVisible()
       alerts = app.checkout.elements.alerts
     })
