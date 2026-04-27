@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createOrder, getOrderByNumber } from './useOrders';
 
-// Mock Supabase client
 vi.mock('@/integrations/supabase/client', () => {
   const mockSingle = vi.fn();
   const mockMaybeSingle = vi.fn();
@@ -22,7 +21,6 @@ vi.mock('@/integrations/supabase/client', () => {
         return {};
       }),
     },
-    // Exporting mocks to configure them in tests
     mockSingle,
     mockMaybeSingle,
     mockEq,
@@ -39,7 +37,6 @@ describe('Hooks do useOrders', () => {
 
   describe('getOrderByNumber', () => {
     it('deve mapear dbOrder para Order corretamente quando encontrado', async () => {
-      // Acessar os métodos mockados via require
       const { mockMaybeSingle } = await import('@/integrations/supabase/client') as any;
 
       const mockDbOrder = {
@@ -66,18 +63,15 @@ describe('Hooks do useOrders', () => {
       expect(error).toBeNull();
       expect(order).not.toBeNull();
       expect(order?.id).toBe('VLO-ABCDEF');
-      
-      // Verificar o mapeamento do cliente (divisão do nome)
+
       expect(order?.customer.name).toBe('John');
       expect(order?.customer.surname).toBe('Doe Silva');
       expect(order?.customer.email).toBe('john@example.com');
-      
-      // Verificar o mapeamento da configuração
+
       expect(order?.configuration.exteriorColor).toBe('midnight-black');
       expect(order?.configuration.wheelType).toBe('sport');
       expect(order?.configuration.optionals).toEqual(['precision-park']);
-      
-      // Outros campos
+
       expect(order?.paymentMethod).toBe('financiamento');
       expect(order?.totalPrice).toBe(47500);
       expect(order?.status).toBe('EM_ANALISE');
@@ -97,8 +91,7 @@ describe('Hooks do useOrders', () => {
       const { mockMaybeSingle } = await import('@/integrations/supabase/client') as any;
       mockMaybeSingle.mockResolvedValueOnce({ data: null, error: { message: 'Database error' } });
 
-      // Suprimir console.error para este teste
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
       const { order, error } = await getOrderByNumber('VLO-ERROR');
 
@@ -133,10 +126,9 @@ describe('Hooks do useOrders', () => {
         status: 'APROVADO' as const,
       };
 
-      // Mockar a linha do banco de dados retornada
       const mockDbRow = {
         id: 'some-uuid',
-        order_number: 'VLO-XYZ123', // gerado internamente
+        order_number: 'VLO-XYZ123',
         color: 'lunar-white',
         wheel_type: 'aero',
         optionals: [],
@@ -156,8 +148,7 @@ describe('Hooks do useOrders', () => {
 
       expect(error).toBeNull();
       expect(order).not.toBeNull();
-      
-      // Verificar se o insert foi chamado com o nome combinado
+
       expect(mockInsert).toHaveBeenCalledWith(
         expect.objectContaining({
           customer_name: 'Jane Doe',
@@ -165,12 +156,10 @@ describe('Hooks do useOrders', () => {
           total_price: 40000,
         })
       );
-      
-      // Garantir que o número do pedido gerado seja VLO- seguido de 6 caracteres
+
       const insertArg = mockInsert.mock.calls[0][0];
       expect(insertArg.order_number).toMatch(/^VLO-[A-Z0-9]{6}$/);
 
-      // Verificar se o valor da loja retornado no pedido foi preservado
       expect(order?.customer.store).toBe('rio-de-janeiro');
       expect(order?.id).toBe('VLO-XYZ123');
     });

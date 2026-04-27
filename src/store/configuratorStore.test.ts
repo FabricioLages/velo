@@ -20,7 +20,7 @@ describe('configuratorStore utilities', () => {
         wheelType: 'sport',
         optionals: [],
       }
-      expect(calculateTotalPrice(config)).toBe(42000) // 40000 + 2000
+      expect(calculateTotalPrice(config)).toBe(42000)
     })
 
     it('should calculate price with optionals', () => {
@@ -30,7 +30,7 @@ describe('configuratorStore utilities', () => {
         wheelType: 'aero',
         optionals: ['precision-park', 'flux-capacitor'],
       }
-      expect(calculateTotalPrice(config)).toBe(50500) // 40000 + 5500 + 5000
+      expect(calculateTotalPrice(config)).toBe(50500)
     })
 
     it('should calculate price with sport wheels and all optionals', () => {
@@ -40,13 +40,12 @@ describe('configuratorStore utilities', () => {
         wheelType: 'sport',
         optionals: ['precision-park', 'flux-capacitor'],
       }
-      expect(calculateTotalPrice(config)).toBe(52500) // 40000 + 2000 + 5500 + 5000
+      expect(calculateTotalPrice(config)).toBe(52500)
     })
   })
 
   describe('calculateInstallment', () => {
     it('should calculate 12x installment with 2% monthly interest', () => {
-      // 40000 * 0.02 * (1.02)^12 / ((1.02)^12 - 1)
       const expected = Math.round(40000 * 0.02 * Math.pow(1.02, 12) / (Math.pow(1.02, 12) - 1) * 100) / 100
       expect(calculateInstallment(40000)).toBe(expected)
       expect(calculateInstallment(40000)).toBe(3782.38)
@@ -55,8 +54,6 @@ describe('configuratorStore utilities', () => {
 
   describe('formatPrice', () => {
     it('should format price as BRL currency', () => {
-      // The exact space character can vary (e.g., standard space vs non-breaking space)
-      // so we use a regex to match the expected format
       const formatted = formatPrice(40000)
       expect(formatted).toMatch(/R\$\s?40\.000,00/)
 
@@ -68,37 +65,26 @@ describe('configuratorStore utilities', () => {
 
 describe('Estado do Configurator Store', () => {
   it('deve alternar os opcionais corretamente', () => {
-    // Redefinir para o padrão
     useConfiguratorStore.getState().resetConfiguration()
-    
-    // Inicialmente os opcionais devem estar vazios
+
     expect(useConfiguratorStore.getState().configuration.optionals).toEqual([])
 
-    // Alternar 'precision-park'
     useConfiguratorStore.getState().toggleOptional('precision-park')
     expect(useConfiguratorStore.getState().configuration.optionals).toContain('precision-park')
 
-    // Alternar 'flux-capacitor'
     useConfiguratorStore.getState().toggleOptional('flux-capacitor')
     expect(useConfiguratorStore.getState().configuration.optionals).toContain('precision-park')
     expect(useConfiguratorStore.getState().configuration.optionals).toContain('flux-capacitor')
-
-    // Alternar 'precision-park' novamente para removê-lo
     useConfiguratorStore.getState().toggleOptional('precision-park')
     expect(useConfiguratorStore.getState().configuration.optionals).not.toContain('precision-park')
     expect(useConfiguratorStore.getState().configuration.optionals).toContain('flux-capacitor')
   })
 
   it('deve redefinir a configuração para o padrão', () => {
-    // Alterar algum estado
     useConfiguratorStore.getState().setExteriorColor('midnight-black')
     useConfiguratorStore.getState().setWheelType('sport')
     useConfiguratorStore.getState().toggleOptional('precision-park')
-
-    // Verificar se o estado foi alterado
     expect(useConfiguratorStore.getState().configuration.exteriorColor).toBe('midnight-black')
-
-    // Redefinir
     useConfiguratorStore.getState().resetConfiguration()
 
     const config = useConfiguratorStore.getState().configuration
@@ -113,13 +99,10 @@ describe('Estado do Configurator Store', () => {
     useConfiguratorStore.setState({ orders: [], currentUserEmail: null })
 
     const email = 'test@example.com'
-    
-    // Deve falhar o login se não existirem pedidos para o email
+
     const loginResult1 = useConfiguratorStore.getState().login(email)
     expect(loginResult1).toBe(false)
     expect(useConfiguratorStore.getState().currentUserEmail).toBeNull()
-
-    // Adicionar um pedido com o email fornecido
     useConfiguratorStore.getState().addOrder({
       id: 'VLO-123456',
       configuration: useConfiguratorStore.getState().configuration,
@@ -137,12 +120,9 @@ describe('Estado do Configurator Store', () => {
       createdAt: new Date().toISOString()
     })
 
-    // Agora o login deve ser bem sucedido
     const loginResult2 = useConfiguratorStore.getState().login(email)
     expect(loginResult2).toBe(true)
     expect(useConfiguratorStore.getState().currentUserEmail).toBe(email)
-
-    // Deve realizar o logout com sucesso
     useConfiguratorStore.getState().logout()
     expect(useConfiguratorStore.getState().currentUserEmail).toBeNull()
   })
