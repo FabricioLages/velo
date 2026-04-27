@@ -13,14 +13,6 @@ export function createConfiguratorActions(page: Page) {
       await page.goto('/configure')
     },
 
-    async startConfigurator() {
-      // OBS: Metódo criado conforme implementação do chekout;
-      // Por esse motivo o método foi criado para simular a experiência do usuário;
-      // E não foi aproveitado o método open() que abre direto na página.
-      await page.goto('/')
-      await page.getByRole('link', { name: /Configure Agora/i }).click()
-    },
-
     async selectColor(colorName: string) {
       await page.getByRole('button', { name: colorName }).click()
     },

@@ -60,18 +60,7 @@ export function createCheckoutActions(page: Page) {
       await expect(tab).toContainText(value)
     },
 
-    async mockCreditAnalysis(score: number) {
-      await page.route('**/functions/v1/credit-analysis', async route => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            status: 'Done',
-            score: score,
-          }),
-        })
-      })
-    },
+
 
     async acceptTerms() {
       await terms.check()
@@ -81,12 +70,9 @@ export function createCheckoutActions(page: Page) {
       await page.getByRole('button', { name: 'Confirmar Pedido' }).click()
     },
 
-    async expectSuccessRoute() {
+    async expectResult(status: string) {
       await expect(page).toHaveURL(/.*\/success/)
+      await expect(page.getByRole('heading', { name: new RegExp(status, 'i') })).toBeVisible()
     },
-
-    async expectOrderMessage(message: string) {
-      await expect(page.getByRole('heading', { name: new RegExp(message, 'i') })).toBeVisible()
-    }
   }
 }
