@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateTotalPrice, calculateInstallment, formatPrice, CarConfiguration } from './configuratorStore'
+import { calculateTotalPrice, calculateInstallment, formatPrice, CarConfiguration, useConfiguratorStore } from './configuratorStore'
 
 describe('configuratorStore utilities', () => {
   describe('calculateTotalPrice', () => {
@@ -63,5 +63,87 @@ describe('configuratorStore utilities', () => {
       const formatted2 = formatPrice(52500.50)
       expect(formatted2).toMatch(/R\$\s?52\.500,50/)
     })
+  })
+})
+
+describe('Estado do Configurator Store', () => {
+  it('deve alternar os opcionais corretamente', () => {
+    // Redefinir para o padrão
+    useConfiguratorStore.getState().resetConfiguration()
+    
+    // Inicialmente os opcionais devem estar vazios
+    expect(useConfiguratorStore.getState().configuration.optionals).toEqual([])
+
+    // Alternar 'precision-park'
+    useConfiguratorStore.getState().toggleOptional('precision-park')
+    expect(useConfiguratorStore.getState().configuration.optionals).toContain('precision-park')
+
+    // Alternar 'flux-capacitor'
+    useConfiguratorStore.getState().toggleOptional('flux-capacitor')
+    expect(useConfiguratorStore.getState().configuration.optionals).toContain('precision-park')
+    expect(useConfiguratorStore.getState().configuration.optionals).toContain('flux-capacitor')
+
+    // Alternar 'precision-park' novamente para removê-lo
+    useConfiguratorStore.getState().toggleOptional('precision-park')
+    expect(useConfiguratorStore.getState().configuration.optionals).not.toContain('precision-park')
+    expect(useConfiguratorStore.getState().configuration.optionals).toContain('flux-capacitor')
+  })
+
+  it('deve redefinir a configuração para o padrão', () => {
+    // Alterar algum estado
+    useConfiguratorStore.getState().setExteriorColor('midnight-black')
+    useConfiguratorStore.getState().setWheelType('sport')
+    useConfiguratorStore.getState().toggleOptional('precision-park')
+
+    // Verificar se o estado foi alterado
+    expect(useConfiguratorStore.getState().configuration.exteriorColor).toBe('midnight-black')
+
+    // Redefinir
+    useConfiguratorStore.getState().resetConfiguration()
+
+    const config = useConfiguratorStore.getState().configuration
+    expect(config.exteriorColor).toBe('glacier-blue')
+    expect(config.interiorColor).toBe('carbon-black')
+    expect(config.wheelType).toBe('aero')
+    expect(config.optionals).toEqual([])
+  })
+
+  it('deve lidar com o login corretamente com base nos pedidos existentes', () => {
+    useConfiguratorStore.getState().resetConfiguration()
+    useConfiguratorStore.setState({ orders: [], currentUserEmail: null })
+
+    const email = 'test@example.com'
+    
+    // Deve falhar o login se não existirem pedidos para o email
+    const loginResult1 = useConfiguratorStore.getState().login(email)
+    expect(loginResult1).toBe(false)
+    expect(useConfiguratorStore.getState().currentUserEmail).toBeNull()
+
+    // Adicionar um pedido com o email fornecido
+    useConfiguratorStore.getState().addOrder({
+      id: 'VLO-123456',
+      configuration: useConfiguratorStore.getState().configuration,
+      totalPrice: 40000,
+      customer: {
+        name: 'John',
+        surname: 'Doe',
+        email: email,
+        phone: '11999999999',
+        cpf: '12345678901',
+        store: 'sao-paulo'
+      },
+      paymentMethod: 'avista',
+      status: 'APROVADO',
+      createdAt: new Date().toISOString()
+    })
+
+    // Agora o login deve ser bem sucedido
+    const loginResult2 = useConfiguratorStore.getState().login(email)
+    expect(loginResult2).toBe(true)
+    expect(useConfiguratorStore.getState().currentUserEmail).toBe(email)
+
+    // Deve realizar o logout com sucesso
+    useConfiguratorStore.getState().logout()
+    expect(useConfiguratorStore.getState().currentUserEmail).toBeNull()
   })
 })
