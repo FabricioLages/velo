@@ -70,13 +70,16 @@ yarn add supabase -D
 # Login e vincular projeto
 yarn supabase login
 yarn supabase link --project-ref qaydjwvpuhqczljiwjnu
+yarn supabase link --project-ref doggdnmvhcbjgyfsikpn --Preview --Produção
 
 # Aplicar migrações (cria tabelas e RLS)
 yarn supabase db push
 
 # Deploy das Edge Functions
 yarn supabase functions deploy
-```
+
+#Verificar o project-ref atual
+cat supabase/.temp/project-ref
 
 Pronto! O banco e as functions estarão configurados.
 

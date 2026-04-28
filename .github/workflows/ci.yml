@@ -14,6 +14,8 @@ on:
 # Variáveis globais reutilizáveis em qualquer job do workflow
 env:
   NODE_VERSION: '24'   # Define a versão padrão do Node.js utilizada no pipeline
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_SCOPE: fabriciolages-projects
 
 jobs:
   # Job único responsável pela validação dos testes unitários
@@ -46,3 +48,35 @@ jobs:
       # neste caso: "test": "vitest run"
       - name: Run unit tests
         run: yarn test
+  
+  build-and-deploy:
+    name: Build & Deploy Vercel Preview
+    needs: [unit-tests]
+    runs-on: ubuntu-latest    
+
+    steps:
+      # 1. Faz o checkout do código-fonte do repositório para dentro da máquina virtual
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      # 2. Instala e configura a versão do Node.js definida na variável global NODE_VERSION
+      - name: Setup Node
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # 3. Habilita o Corepack para que o Yarn seja gerenciado automaticamente conforme a configuração do projeto e versão presente no lockfile
+      - name: Enable Corepack
+        run: corepack enable
+
+      # 4. Instala todas as dependências do projeto respeitando exatamente o arquivo yarn.lock para garantir reprodutibilidade no ambiente CI
+      - name: Install dependencies
+        run: yarn install
+
+      # 5. Build para o Vercel
+      - name: Build Vercel
+        run: yarn vercel build --token=$VERCEL_TOKEN
+
+      # 6. Deploy preview para o Vercel
+      - name: Deploy Vercel
+        run: yarn vercel deploy --prebuilt --target=preview --token=$VERCEL_TOKEN --scope=$VERCEL_SCOPE 
