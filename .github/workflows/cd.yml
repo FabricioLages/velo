@@ -78,12 +78,18 @@ jobs:
         run: yarn install
 
       # 5. Obter as configurações do Vercel
-      - name: Pull Vercel config
+      - name: Pull Vercel config Preview
         run: |
           yarn vercel pull --yes \
           --environment=preview \
           --token=${{ secrets.VERCEL_TOKEN }} \
           --scope=$VERCEL_SCOPE
+      
+      # 5.1 - Debug Vercel Preview env
+      - name: Debug Vercel Preview env
+        run: |
+          cat .vercel/.env.preview.local | grep VITE_SUPABASE_PROJECT_ID
+          cat .vercel/.env.preview.local | grep VITE_SUPABASE_URL
 
       # 6. Build para o Vercel
       - name: Build Vercel
