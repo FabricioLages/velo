@@ -85,7 +85,7 @@ jobs:
           --token=${{ secrets.VERCEL_TOKEN }} \
           --scope=$VERCEL_SCOPE
       
-      # 5.1 - Debug Vercel Preview env
+      # 5.1 - Debug Vercel Preview env variaveis sem Sensitive
       - name: Debug Vercel Preview env
         run: |
           cat .vercel/.env.preview.local | grep VITE_SUPABASE_PROJECT_ID
