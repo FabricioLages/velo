@@ -1,53 +1,36 @@
-# Workflow de integração contínua (CI) responsável por executar automaticamente
-# os testes unitários da aplicação sempre que houver push na branch principal.
-# A estrutura foi mantida simples e organizada para permitir futuras expansões.
-
-# Nome exibido na aba Actions do GitHub
 name: Continuous Deployment
 
-# Evento que dispara a execução do workflow
 on:
   push:
     branches:
-      - main   # Executa somente quando houver envio de código para a branch main
+      - main
 
-# Variáveis globais reutilizáveis em qualquer job do workflow
 env:
-  NODE_VERSION: '24'   # Define a versão padrão do Node.js utilizada no pipeline
+  NODE_VERSION: '24'
   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
   VERCEL_PROJECT_ID:  ${{ secrets.VERCEL_PROJECT_ID }}
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_SCOPE: fabriciolages-projects
 
 jobs:
-  # Job único responsável pela validação dos testes unitários
   unit-tests:
-    name: Unit Tests   # Nome amigável exibido visualmente no GitHub Actions
+    name: Unit Tests
     runs-on: ubuntu-latest
 
     steps:
-      # Faz o checkout do código-fonte do repositório para dentro da máquina virtual
       - name: Checkout
         uses: actions/checkout@v6.0.2
 
-      # Instala e configura a versão do Node.js definida na variável global NODE_VERSION
       - name: Setup Node
         uses: actions/setup-node@v6.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # Habilita o Corepack para que o Yarn seja gerenciado automaticamente
-      # conforme a configuração do projeto e versão presente no lockfile
       - name: Enable Corepack
         run: corepack enable
-
-      # Instala todas as dependências do projeto respeitando exatamente
-      # o arquivo yarn.lock para garantir reprodutibilidade no ambiente CI
+      
       - name: Install dependencies
         run: yarn install
-
-      # Executa os testes unitários utilizando o script configurado no package.json
-      # neste caso: "test": "vitest run"
       - name: Run unit tests
         run: yarn test
   
@@ -59,43 +42,30 @@ jobs:
       deployment-url: ${{ steps.deploy.outputs.deployment-url}}
 
     steps:
-      # 1. Faz o checkout do código-fonte do repositório para dentro da máquina virtual
       - name: Checkout Preview
         uses: actions/checkout@v6.0.2
 
-      # 2. Instala e configura a versão do Node.js definida na variável global NODE_VERSION
       - name: Setup Node
         uses: actions/setup-node@v6.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # 3. Habilita o Corepack para que o Yarn seja gerenciado automaticamente conforme a configuração do projeto e versão presente no lockfile
       - name: Enable Corepack
         run: corepack enable
 
-      # 4. Instala todas as dependências do projeto respeitando exatamente o arquivo yarn.lock para garantir reprodutibilidade no ambiente CI
       - name: Install dependencies
         run: yarn install
 
-      # 5. Obter as configurações do Vercel
       - name: Pull Vercel config Preview
         run: |
           yarn vercel pull --yes \
           --environment=preview \
           --token=${{ secrets.VERCEL_TOKEN }} \
-          --scope=$VERCEL_SCOPE
-      
-      # 5.1 - Debug Vercel Preview env variaveis sem Sensitive
-      - name: Debug Vercel Preview env
-        run: |
-          cat .vercel/.env.preview.local | grep VITE_SUPABASE_PROJECT_ID
-          cat .vercel/.env.preview.local | grep VITE_SUPABASE_URL
+          --scope=$VERCEL_SCOPE  
 
-      # 6. Build para o Vercel
       - name: Build Vercel
         run: yarn vercel build --token=${{ secrets.VERCEL_TOKEN }} --scope=$VERCEL_SCOPE
 
-      # 7. Deploy preview para o Vercel
       - name: Deploy Vercel
         id: deploy
         run: |
@@ -105,43 +75,35 @@ jobs:
           --scope=$VERCEL_SCOPE)
           echo "deployment-url=$URL" >> $GITHUB_OUTPUT
 
-  # Job para rodar os testes end-to-end (e2e) na Vercel Preview
   e2e-tests:
     name: Run E2E Tests
-    needs: [build-and-deploy]  # Só executa depois do build e deploy bem-sucedidos
+    needs: [build-and-deploy]
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Faz o checkout do código-fonte do repositório para dentro da máquina virtual
       - name: Checkout
         uses: actions/checkout@v6.0.2
 
-      # 2. Instala e configura a versão do Node.js definida na variável global NODE_VERSION
       - name: Setup Node
         uses: actions/setup-node@v6.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # 3. Habilita o Corepack para que o Yarn seja gerenciado automaticamente conforme a configuração do projeto e versão presente no lockfile
       - name: Enable Corepack
         run: corepack enable
 
-      # 4. Instala todas as dependências do projeto respeitando exatamente o arquivo yarn.lock para garantir reprodutibilidade no ambiente CI
       - name: Install dependencies
         run: yarn install
 
-      # 5. Instalação do Chromium
       - name: Install Playwright Browser
         run: yarn playwright install --with-deps chromium
 
-      # 6. Execução dos testes de Regressão
       - name: Run E2E Regression Tests
-        run: yarn playwright test playwright/e2e/pedidos.spec
+        run: yarn playwright test
         env:
           BASE_URL: ${{ needs.build-and-deploy.outputs.deployment-url }}
           DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
 
-      # 7. Relatório de testes automatizados
       - name: Upload Playwright report
         if: ${{ !cancelled()}}
         uses: actions/upload-artifact@v7.0.1
@@ -149,7 +111,6 @@ jobs:
           name: playwright-report
           path: playwright-report
 
-      # 8. Publicar report JSON do TestDino
       - name: Publish TestDino Report
         if: ${{ !cancelled()}}
         run: npx tdpw upload ./playwright-report --token=${{ secrets.TD_TOKEN }}
@@ -160,26 +121,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Faz o checkout do código-fonte aprovado pelos testes E2E
       - name: Checkout Production
         uses: actions/checkout@v6.0.2
 
-      # 2. Instala e configura a versão do Node.js definida na variável global NODE_VERSION
       - name: Setup Node
         uses: actions/setup-node@v6.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # 3. Habilita o Corepack para que o Yarn seja gerenciado automaticamente conforme a configuração do projeto
       - name: Enable Corepack
         run: corepack enable
 
-      # 4. Instala todas as dependências do projeto para executar o build de produção
       - name: Install dependencies
         run: yarn install
 
-      # 5. Baixa as configurações e variáveis de ambiente de Production da Vercel
-      # Importante: as variáveis VITE_* serão embutidas no bundle durante o build
       - name: Pull Vercel Production config
         run: |
           yarn vercel pull --yes \
@@ -187,12 +142,8 @@ jobs:
           --token=${{ secrets.VERCEL_TOKEN }} \
           --scope=$VERCEL_SCOPE
 
-      # 6. Gera um novo build de produção usando as variáveis Production da Vercel
-      # Isso garante que o bundle final use o Supabase de produção, e não o Supabase de preview
       - name: Build Vercel Production
         run: yarn vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} --scope=$VERCEL_SCOPE
-
-      # 7. Publica o build de produção gerado no passo anterior
       - name: Deploy Vercel Production
         run: |
           yarn vercel deploy --prebuilt --prod \
