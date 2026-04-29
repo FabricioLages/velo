@@ -41,8 +41,6 @@ export default defineConfig({
     ['html', { outputDir: './playwright-report' }],
     // Mandatory reporter for JSON results
     ['json', { outputFile: './playwright-report/report.json' }],
-
-
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {

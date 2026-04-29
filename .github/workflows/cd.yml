@@ -153,9 +153,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Vercel promote
+      # 1. Faz o checkout do código-fonte aprovado pelos testes E2E
+      - name: Checkout Production
+        uses: actions/checkout@v6.0.2
+
+      # 2. Instala e configura a versão do Node.js definida na variável global NODE_VERSION
+      - name: Setup Node
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # 3. Habilita o Corepack para que o Yarn seja gerenciado automaticamente conforme a configuração do projeto
+      - name: Enable Corepack
+        run: corepack enable
+
+      # 4. Instala todas as dependências do projeto para executar o build de produção
+      - name: Install dependencies
+        run: yarn install
+
+      # 5. Baixa as configurações e variáveis de ambiente de Production da Vercel
+      # Importante: as variáveis VITE_* serão embutidas no bundle durante o build
+      - name: Pull Vercel Production config
         run: |
-          npx vercel@latest promote ${{ needs.build-and-deploy.outputs.deployment-url}} \
+          yarn vercel pull --yes \
+          --environment=production \
+          --token=${{ secrets.VERCEL_TOKEN }} \
+          --scope=$VERCEL_SCOPE
+
+      # 6. Gera um novo build de produção usando as variáveis Production da Vercel
+      # Isso garante que o bundle final use o Supabase de produção, e não o Supabase de preview
+      - name: Build Vercel Production
+        run: yarn vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} --scope=$VERCEL_SCOPE
+
+      # 7. Publica o build de produção gerado no passo anterior
+      - name: Deploy Vercel Production
+        run: |
+          yarn vercel deploy --prebuilt --prod \
           --token=$VERCEL_TOKEN \
-          --scope=$VERCEL_SCOPE \
-          --yes
+          --scope=$VERCEL_SCOPE

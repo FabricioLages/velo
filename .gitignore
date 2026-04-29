@@ -32,6 +32,10 @@ dist-ssr
 /playwright/.auth/
 /.playwright-mcp/
 
+.vercel
+.env
+
+# Apoio estudos
 z_anotacoes.txt
 z_localizadores.txt
 z_aprovado.txt
@@ -42,4 +46,4 @@ z_proposta1.md
 z_testCase2.md
 
 
-.vercel
+
